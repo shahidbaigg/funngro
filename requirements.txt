@@ -1,0 +1,6 @@
+# Funngro Web Application Requirements
+# This is a high-performance, zero-dependency static web application.
+# Python 3.8+ built-in modules are sufficient for local hosting.
+
+# Optional development server utilities:
+# http.server is part of standard library: python -m http.server 3000
