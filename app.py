@@ -1,10 +1,8 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
-import sys
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        # Route clean URLs to HTML files
         if self.path == '/company':
             self.path = '/company.html'
         elif self.path == '/teen':
@@ -13,23 +11,31 @@ class Handler(SimpleHTTPRequestHandler):
 
 def app(environ, start_response):
     """WSGI entrypoint for Vercel Python runtime fallback"""
-    status = '200 OK'
     path = environ.get('PATH_INFO', '/')
-    
-    if path == '/company' or path == '/company.html':
-        file_path = os.path.join(os.path.dirname(__file__), 'company.html')
+    base_dir = os.path.dirname(__file__)
+
+    if path == '/styles.css':
+        file_path = os.path.join(base_dir, 'styles.css')
+        content_type = 'text/css; charset=utf-8'
+    elif path in ('/company', '/company.html'):
+        file_path = os.path.join(base_dir, 'company.html')
+        content_type = 'text/html; charset=utf-8'
     else:
-        file_path = os.path.join(os.path.dirname(__file__), 'index.html')
-    
+        file_path = os.path.join(base_dir, 'index.html')
+        content_type = 'text/html; charset=utf-8'
+
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
             content = f.read()
-        headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(content)))]
-        start_response(status, headers)
+        headers = [
+            ('Content-Type', content_type),
+            ('Content-Length', str(len(content))),
+            ('Cache-Control', 'public, max-age=3600')
+        ]
+        start_response('200 OK', headers)
         return [content]
-    
-    status = '404 Not Found'
-    start_response(status, [('Content-Type', 'text/plain')])
+
+    start_response('404 Not Found', [('Content-Type', 'text/plain')])
     return [b'Not Found']
 
 if __name__ == '__main__':
